@@ -34,14 +34,15 @@ which streams it to the peer's server over the tailnet.
 - `tailscale status --json` must report `BackendState == "Running"` (note: `TailscaleIPs` is still
   populated when stopped, so IPs alone are not trusted).
 - The peer server binds only to the Tailscale IP. If Tailscale goes down, the app closes the peer
-  listener; a watchdog re-checks every 5 s and re-binds when Tailscale is back.
+  listener; a watchdog re-checks every 3 s (`PORTAL_WATCHDOG_MS`) and re-binds when Tailscale is back.
 - Sender checks status before an offer and before streaming; the target must be a peer listed in
-  `status.Peer` with `Online == true`, and the destination address is taken from that peer's
-  `TailscaleIPs` (never from free-form user input).
+  `status.Peer` whose `tailscale whois` node ID matches, and the destination address is taken from
+  that peer's `TailscaleIPs` (never from free-form user input). `Online` is shown in the UI but not
+  required: a peer that is really offline simply fails to connect.
 - Receiver checks status on every request and runs `tailscale whois` on the remote address of every
   incoming connection; requests from IPs that are not tailnet nodes are rejected (403).
-- Optional allow-list: `PORTAL_ALLOW_USERS` / same-user-only by default (the remote node's
-  `UserProfile.ID` must equal the local node's `UserID`, unless `PORTAL_ALLOW_ANY_TAILNET_USER=1`).
+- Same-user-only by default: the remote node's `UserProfile.ID` must equal the local node's `UserID`,
+  unless `PORTAL_ALLOW_ANY_TAILNET_USER=1`.
 
 ## Encryption & integrity
 
@@ -56,7 +57,8 @@ Layer 2 — application (defense in depth, independent of Tailscale):
 - File is split into 1 MiB chunks; each chunk is sealed with AES-256-GCM, nonce = prefix || u64 counter,
   AAD = transferId || chunkIndex || isFinal. Frame = u32 length || ciphertext || tag. Reordering,
   truncation and chunk swapping are detected; the final chunk is flagged so truncation fails.
-- Whole-file SHA-256 is computed by sender and verified by receiver after decryption.
+- Whole-file SHA-256 is computed on both ends: the receiver returns its digest after decryption and
+  the sender fails the transfer if it doesn't match its own.
 - Received data is written to a `.part` file in the download dir and renamed only after the final
   chunk and hash verify. Failure deletes the `.part`.
 - Ephemeral keys are kept in memory only and dropped after the transfer.
@@ -71,8 +73,8 @@ secrecy and integrity, but it is not a replacement for Tailscale identity.
 1. Sender UI: pick peer + file → `POST /api/send` (local, streamed body).
 2. Sender server → `POST http://<peer-ip>:7778/v1/offer` with `{transferId, name, size, sha256?, senderPub}`.
 3. Receiver server whois-checks, stores the pending offer, pushes it to its UI via SSE.
-4. Receiver user clicks Accept/Decline → receiver returns its pubkey via the long-poll
-   `GET /v1/offer/:id` the sender is waiting on (timeout 2 min).
+4. Receiver user clicks Accept/Decline → receiver answers the sender's still-open `POST /v1/offer`
+   request with its pubkey (or a decline). The offer times out after 2 min.
 5. On accept, sender streams encrypted frames to `POST /v1/data/:id`. Receiver decrypts, writes,
    verifies, responds `{ok, sha256}`.
 6. Both UIs show progress via SSE.
@@ -81,8 +83,9 @@ secrecy and integrity, but it is not a replacement for Tailscale identity.
 
 - UI server binds 127.0.0.1 only.
 - `Host` header must be `127.0.0.1:<port>` or `localhost:<port>` (blocks DNS rebinding).
-- State-changing requests require a per-run random token (`X-Portal-Token`) that the page receives
-  embedded in the HTML; cross-origin pages can't read it. `Origin`, when present, must match.
+- Every `/api` request requires a per-run random token (`X-Portal-Token`). The page receives it in
+  the URL fragment of the link printed in the terminal (fragments are never sent to servers) and
+  keeps it in `sessionStorage`. `Origin`, when present, must match, and is required on mutations.
 - Strict CSP, no inline scripts from untrusted input, filenames rendered via `textContent`.
 
 ## Receiver file safety

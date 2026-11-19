@@ -2,8 +2,9 @@
 
 Send files between your computers over Tailscale, from a browser tab.
 
-- Works only while Tailscale is connected on **both** computers. If either side is stopped, logged out
-  or drops mid-transfer, nothing is sent and partial files are deleted.
+- Works only while Tailscale is connected on **both** computers. If either side is stopped or logged
+  out, nothing is sent. If either drops mid-transfer, the transfer aborts on both ends and the partial
+  file is deleted.
 - Encrypted twice: Tailscale's WireGuard tunnel, plus a fresh AES-256-GCM key per transfer
   (ephemeral X25519 key exchange). Every 1 MiB chunk is authenticated, and the SHA-256 of the file
   is checked on both ends.
