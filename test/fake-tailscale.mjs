@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env bun
 // Stand-in for the `tailscale` CLI in tests. Reads its world from the JSON file in $FAKE_TS_FILE:
 //   { "status": <status --json output>, "whois": { "<ip>": <whois --json output> } }
 import fs from 'node:fs';

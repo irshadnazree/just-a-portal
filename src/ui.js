@@ -1,17 +1,18 @@
 // Local-only UI server: static files + JSON API + event stream. Binds 127.0.0.1.
 import http from 'node:http';
-import fs from 'node:fs/promises';
-import path from 'node:path';
 import crypto from 'node:crypto';
-import { fileURLToPath } from 'node:url';
 import { sendJson, readJsonBody, HttpError } from './util.js';
+// Embedded at import time, so `bun build` bundles the UI into one file and nothing is read from disk.
+import indexHtml from '../public/index.html' with { type: 'text' };
+import appJs from '../public/app.js' with { type: 'text' };
+import styleCss from '../public/style.css' with { type: 'text' };
+import iconSvg from '../public/icon.svg' with { type: 'text' };
 
-const PUBLIC_DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'public');
 const STATIC = {
-  '/': ['index.html', 'text/html; charset=utf-8'],
-  '/app.js': ['app.js', 'text/javascript; charset=utf-8'],
-  '/style.css': ['style.css', 'text/css; charset=utf-8'],
-  '/icon.svg': ['icon.svg', 'image/svg+xml'],
+  '/': [Buffer.from(indexHtml), 'text/html; charset=utf-8'],
+  '/app.js': [Buffer.from(appJs), 'text/javascript; charset=utf-8'],
+  '/style.css': [Buffer.from(styleCss), 'text/css; charset=utf-8'],
+  '/icon.svg': [Buffer.from(iconSvg), 'image/svg+xml'],
 };
 
 const SECURITY_HEADERS = {
@@ -58,8 +59,7 @@ export function createUiServer(portal, config) {
     const p = url.pathname;
 
     if (req.method === 'GET' && STATIC[p]) {
-      const [file, type] = STATIC[p];
-      const data = await fs.readFile(path.join(PUBLIC_DIR, file));
+      const [data, type] = STATIC[p];
       res.writeHead(200, { 'content-type': type, 'content-length': data.length, ...SECURITY_HEADERS });
       return res.end(data);
     }

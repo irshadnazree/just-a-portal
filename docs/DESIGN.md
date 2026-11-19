@@ -10,7 +10,8 @@ Send files between PCs on the same Tailscale tailnet from a browser UI.
 
 ## Architecture
 
-Every PC runs the same Node.js app (zero npm dependencies; Node >= 22, runs on macOS / Windows / Linux).
+Every PC runs the same app on Bun (zero runtime dependencies; Bun >= 1.4, runs on macOS / Windows / Linux).
+It uses only `node:` built-in modules, and embeds the UI files so it can be bundled into one file.
 The app opens two listeners:
 
 | Listener | Bind address | Who talks to it |
@@ -94,7 +95,7 @@ secrecy and integrity, but it is not a replacement for Tailscale identity.
 ## Testability
 
 `PORTAL_TAILSCALE_BIN` lets tests substitute a fake `tailscale` script, and ports are configurable, so
-two instances can be exercised end-to-end on one machine with `node --test`.
+two instances can be exercised end-to-end on one machine with `bun test`.
 
 ## Changes after review round 1 (Sol)
 
@@ -168,7 +169,7 @@ Fixed (each verified by reading the code; regression tests where feasible):
 ## Known limitation
 
 The guarantee "nothing leaves this machine outside WireGuard" depends on the OS routing `100.x`
-traffic into the Tailscale interface while that address is assigned. Node cannot pin a socket to an
+traffic into the Tailscale interface while that address is assigned. The runtime cannot pin a socket to an
 interface, so a conflicting route (e.g. another VPN claiming the same CGNAT range) could misroute a
 connection. In that case the app-layer encryption still keeps file contents from going out in
 plaintext, but an active attacker on that misrouted path could substitute the ephemeral keys, because

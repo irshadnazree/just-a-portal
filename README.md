@@ -9,14 +9,14 @@ Send files between your computers over Tailscale, from a browser tab.
   is checked on both ends.
 - The receiver must click **Accept**. Files land in `~/Downloads/just-a-portal` and never overwrite
   anything.
-- No dependencies. Needs Node.js 22+ and the Tailscale app on each computer (macOS, Windows, Linux).
+- No runtime dependencies. Needs [Bun](https://bun.sh) 1.4+ and the Tailscale app on each computer (macOS, Windows, Linux).
 
 ## Run
 
 On each computer:
 
 ```sh
-node src/main.js        # or: npm start
+bun src/main.js        # or: bun start
 ```
 
 It opens a browser tab with a link like `http://127.0.0.1:7777/#k=…`. That link carries a private
@@ -49,7 +49,7 @@ Optional hardening: in your tailnet ACLs, allow TCP 7778 only between your own d
 ## Test
 
 ```sh
-npm test
+bun test
 ```
 
 The end-to-end tests run two portals on loopback against a fake `tailscale` CLI, covering:

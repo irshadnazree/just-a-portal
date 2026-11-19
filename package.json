@@ -4,10 +4,15 @@
   "description": "Send files between PCs on your Tailscale tailnet from a browser.",
   "type": "module",
   "private": true,
-  "engines": { "node": ">=22" },
-  "bin": { "just-a-portal": "src/main.js" },
+  "packageManager": "bun@1.4.2",
+  "engines": {
+    "bun": ">=1.4"
+  },
+  "bin": {
+    "just-a-portal": "src/main.js"
+  },
   "scripts": {
-    "start": "node src/main.js",
-    "test": "node --test --test-concurrency=1 test/*.test.js"
+    "start": "bun src/main.js",
+    "test": "bun test"
   }
 }

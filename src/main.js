@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env bun
 import os from 'node:os';
 import path from 'node:path';
 import { spawn } from 'node:child_process';

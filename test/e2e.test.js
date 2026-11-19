@@ -1,5 +1,5 @@
 // End-to-end: two real portal processes, each with its own fake `tailscale` world, on loopback.
-import { test, before, after } from 'node:test';
+import { test, beforeAll, afterAll } from 'bun:test';
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
 import fs from 'node:fs';
@@ -114,14 +114,14 @@ const listening = (node, up = true) => waitFor(async () => {
 let A, B;
 const base = 20000 + Math.floor(Math.random() * 20000);
 
-before(async () => {
+beforeAll(async () => {
   A = await startNode('A', { peerPort: base, remotePeerPort: base + 1, world: { selfId: 'nA', selfName: 'alpha', peerId: 'nB', peerName: 'bravo' } });
   B = await startNode('B', { peerPort: base + 1, remotePeerPort: base, world: { selfId: 'nB', selfName: 'bravo', peerId: 'nA', peerName: 'alpha' } });
   await listening(A);
   await listening(B);
 });
 
-after(async () => {
+afterAll(async () => {
   for (const n of [A, B]) {
     n?.child.kill('SIGTERM');
     await fsp.rm(n.dir, { recursive: true, force: true }).catch(() => {});

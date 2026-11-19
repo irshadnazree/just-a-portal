@@ -1,0 +1,7 @@
+# Don't auto-load a .env into the portal or its tests: PORTAL_* variables change security settings
+# (e.g. PORTAL_TAILSCALE_BIN, PORTAL_ALLOW_ANY_TAILNET_USER) and should only come from the real environment.
+env = false
+
+[test]
+# The end-to-end tests start real portal processes and wait on watchdog/idle timers.
+timeout = 30000
