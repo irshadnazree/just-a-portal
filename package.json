@@ -1,0 +1,13 @@
+{
+  "name": "just-a-portal",
+  "version": "0.1.0",
+  "description": "Send files between PCs on your Tailscale tailnet from a browser.",
+  "type": "module",
+  "private": true,
+  "engines": { "node": ">=22" },
+  "bin": { "just-a-portal": "src/main.js" },
+  "scripts": {
+    "start": "node src/main.js",
+    "test": "node --test --test-concurrency=1 test/*.test.js"
+  }
+}
