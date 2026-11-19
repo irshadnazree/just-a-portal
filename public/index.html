@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <title>just-a-portal</title>
+  <link rel="icon" href="/icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/style.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <header class="top">
+    <div class="brand">
+      <img src="/icon.svg" alt="" width="22" height="22">
+      <span>just-a-portal</span>
+    </div>
+    <button id="ts-pill" class="pill" type="button" title="Re-check Tailscale">
+      <span class="dot"></span><span id="ts-text">Checking Tailscale…</span>
+    </button>
+  </header>
+
+  <div id="locked" class="banner" hidden>
+    <strong>No session key.</strong>
+    Open the link printed in the terminal where you started just-a-portal.
+  </div>
+  <div id="offline" class="banner warn" hidden>
+    <strong>Tailscale is not connected.</strong>
+    <span id="offline-detail">Sending and receiving are disabled until it is.</span>
+  </div>
+
+  <main class="grid">
+    <section class="card" aria-labelledby="send-h">
+      <h2 id="send-h">Send</h2>
+      <label class="field-label" for="peer">To</label>
+      <div class="peer-row">
+        <select id="peer" disabled></select>
+      </div>
+      <p id="peer-hint" class="hint"></p>
+
+      <label id="drop" class="drop" for="file">
+        <input id="file" type="file" multiple disabled>
+        <span class="drop-title">Drop files here</span>
+        <span class="drop-sub">or click to choose</span>
+      </label>
+      <p class="hint">The receiver has to accept. Files travel over your tailnet (WireGuard) and are also
+        encrypted end to end with a one-time AES-256-GCM key per transfer.</p>
+    </section>
+
+    <section class="card" aria-labelledby="xfer-h">
+      <div class="card-head">
+        <h2 id="xfer-h">Transfers</h2>
+        <span id="dl-dir" class="hint mono"></span>
+      </div>
+      <ul id="transfers" class="transfers"></ul>
+      <p id="empty" class="empty">Nothing yet. Incoming files show up here for you to accept.</p>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <span id="self" class="mono"></span>
+  </footer>
+</body>
+</html>
