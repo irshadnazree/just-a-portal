@@ -13,6 +13,8 @@ import { fileURLToPath } from 'node:url';
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 const FAKE = path.join(ROOT, 'test', 'fake-tailscale.mjs');
 const IP = '127.0.0.1';
+// PORTAL_ENTRY runs the suite against another build of main.js, e.g. the bundled dist/site/portal.js.
+const ENTRY = process.env.PORTAL_ENTRY ? path.resolve(process.env.PORTAL_ENTRY) : path.join(ROOT, 'src', 'main.js');
 
 function world({ running = true, selfId, selfName, selfUser = 1, peerId, peerName, peerUser = 1, whoisUser = peerUser, whoisId = peerId }) {
   return {
@@ -32,7 +34,7 @@ async function startNode(name, opts) {
   const tsFile = path.join(dir, 'world.json');
   const downloads = path.join(dir, 'downloads');
   await fsp.writeFile(tsFile, JSON.stringify(world(opts.world)));
-  const child = spawn(process.execPath, [path.join(ROOT, 'src', 'main.js'), '--no-open'], {
+  const child = spawn(process.execPath, [ENTRY, '--no-open'], {
     env: {
       ...process.env,
       PORTAL_TAILSCALE_BIN: FAKE,

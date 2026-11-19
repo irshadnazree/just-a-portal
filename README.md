@@ -13,7 +13,12 @@ Send files between your computers over Tailscale, from a browser tab.
 
 ## Run
 
-On each computer:
+On each computer, either grab the single-file build from [portal.ruxera.com](https://portal.ruxera.com),
+which shows the checksum-checked commands for macOS, Linux and Windows. Run it from its own folder with
+`bun --no-env-file portal.js`: Bun otherwise loads a `.env` (and `bunfig.toml`) from the current folder,
+which could change the portal's settings.
+
+or run from a checkout:
 
 ```sh
 bun src/main.js        # or: bun start
@@ -49,9 +54,26 @@ Optional hardening: in your tailnet ACLs, allow TCP 7778 only between your own d
 ## Test
 
 ```sh
-bun test
+bun test               # unit + end-to-end tests against src/
+bun run test:bundle    # builds portal.js and runs the end-to-end tests against it
 ```
 
 The end-to-end tests run two portals on loopback against a fake `tailscale` CLI, covering:
 connect/disconnect on either side, a disconnect mid-transfer, tampered data, identity mismatch,
 another user's device, hostile filenames, and the local UI's host/origin/token checks.
+
+## Deploy portal.ruxera.com
+
+The site is a static download page (`site/`) plus the bundled `portal.js`, served by Cloudflare
+Workers static assets. The portal itself never runs on Cloudflare. Deploys use the
+[`cf` CLI](https://www.npmjs.com/package/cf), configured in `cloudflare.config.ts`. `cf` runs on
+Node.js (^22.23, ^24.22 or ^26.12), so deploying needs Node installed as well as Bun; the portal
+itself only needs Bun.
+
+```sh
+bun install
+bunx cf auth whoami          # once: bunx cf auth login
+bun run build                # bundles portal.js and writes .cloudflare/output
+bunx cf deploy --prebuilt --dry-run
+bun run deploy               # runs both test suites, then cf deploy --prebuilt
+```

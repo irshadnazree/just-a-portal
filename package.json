@@ -13,6 +13,14 @@
   },
   "scripts": {
     "start": "bun src/main.js",
-    "test": "bun test"
+    "test": "bun test",
+    "build": "bun scripts/build.js",
+    "test:bundle": "bun run build && PORTAL_ENTRY=dist/site/portal.js bun test test/e2e.test.js",
+    "deploy": "bun run test && bun run test:bundle && cf deploy --prebuilt"
+  },
+  "devDependencies": {
+    "@cloudflare/build-output-utils": "1.0.0-rc.1",
+    "@cloudflare/config": "1.0.0-rc.1",
+    "cf": "1.0.0-rc.1"
   }
 }

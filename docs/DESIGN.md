@@ -11,7 +11,7 @@ Send files between PCs on the same Tailscale tailnet from a browser UI.
 ## Architecture
 
 Every PC runs the same app on Bun (zero runtime dependencies; Bun >= 1.4, runs on macOS / Windows / Linux).
-It uses only `node:` built-in modules, and embeds the UI files so it can be bundled into one file.
+It uses only `node:` built-in modules, and ships as one bundled `portal.js` with the UI embedded.
 The app opens two listeners:
 
 | Listener | Bind address | Who talks to it |
@@ -95,7 +95,8 @@ secrecy and integrity, but it is not a replacement for Tailscale identity.
 ## Testability
 
 `PORTAL_TAILSCALE_BIN` lets tests substitute a fake `tailscale` script, and ports are configurable, so
-two instances can be exercised end-to-end on one machine with `bun test`.
+two instances can be exercised end-to-end on one machine with `bun test`. Setting `PORTAL_ENTRY` runs the
+same end-to-end suite against the bundled `portal.js`.
 
 ## Changes after review round 1 (Sol)
 

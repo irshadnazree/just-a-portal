@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>just-a-portal</title>
+  <meta name="description" content="Send files between your own computers over Tailscale, from a browser tab. End-to-end encrypted, receiver must accept.">
+  <link rel="icon" href="/icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/site.css">
+</head>
+<body>
+  <main class="wrap">
+    <header class="brand">
+      <img src="/icon.svg" alt="" width="28" height="28">
+      <span>just-a-portal</span>
+      <span class="ver">v{{VERSION}}</span>
+    </header>
+
+    <h1>Send files between your computers over Tailscale.</h1>
+    <p class="lede">
+      Run it on each computer, open the browser tab it prints, pick a device and drop a file.
+      The other computer clicks <strong>Accept</strong>. Files go straight between your devices over
+      Tailscale; this site never sees them.
+    </p>
+
+    <section>
+      <h2>Run it</h2>
+      <p>Needs <a href="https://bun.sh">Bun</a> 1.4+ and the <a href="https://tailscale.com/download">Tailscale app</a>, connected, on both computers.</p>
+
+      <p class="muted">Each block makes its own folder, downloads portal.js, and runs it only if the
+        checksum matches this build. <code>--no-env-file</code> stops Bun from loading a stray
+        <code>.env</code> that could change the portal's settings.</p>
+
+      <h3>macOS</h3>
+      <pre><code>mkdir -p ~/just-a-portal &amp;&amp; cd ~/just-a-portal
+curl -fsSLO https://portal.ruxera.com/portal.js
+echo "{{SHA256}}  portal.js" | shasum -a 256 -c - &amp;&amp; bun --no-env-file portal.js</code></pre>
+
+      <h3>Linux</h3>
+      <pre><code>mkdir -p ~/just-a-portal &amp;&amp; cd ~/just-a-portal
+curl -fsSLO https://portal.ruxera.com/portal.js
+echo "{{SHA256}}  portal.js" | sha256sum -c - &amp;&amp; bun --no-env-file portal.js</code></pre>
+
+      <h3>Windows (PowerShell)</h3>
+      <pre><code>mkdir -Force $HOME\just-a-portal | Out-Null; cd $HOME\just-a-portal
+irm https://portal.ruxera.com/portal.js -OutFile portal.js
+if ((Get-FileHash portal.js).Hash -eq '{{SHA256}}') { bun --no-env-file portal.js } else { 'Checksum mismatch: not running portal.js' }</code></pre>
+
+      <p class="dl">
+        <a class="btn" href="/portal.js" download>Download portal.js</a>
+        <span class="muted">{{SIZE}}, one readable file, no dependencies</span>
+      </p>
+
+      <details>
+        <summary>About the checksum</summary>
+        <p>SHA-256 of this build (also at <a href="/portal.js.sha256">portal.js.sha256</a>):</p>
+        <pre><code class="hash">{{SHA256}}</code></pre>
+        <p>It catches a corrupted, partial or mismatched download. It is served from this same site, so it
+          can't protect you if the site itself were compromised. For that, read portal.js before running it,
+          or run from <a href="https://github.com/irshadnazree/just-a-portal">the source</a>.</p>
+      </details>
+    </section>
+
+    <section>
+      <h2>What it does</h2>
+      <ul>
+        <li><strong>Tailscale required on both ends.</strong> It sends from this computer's Tailscale address to the other device's Tailscale address, so if Tailscale is down the connection fails instead of going out over your LAN.</li>
+        <li><strong>Encrypted twice.</strong> Tailscale's WireGuard tunnel, plus a fresh AES-256-GCM key per transfer (X25519). Every 1 MiB chunk is authenticated and the file's SHA-256 is checked on both ends.</li>
+        <li><strong>Your devices only.</strong> The receiver checks each sender with <code>tailscale whois</code> and, by default, only accepts devices owned by the same Tailscale user.</li>
+        <li><strong>Nothing is overwritten.</strong> Files land in <code>~/Downloads/just-a-portal</code>. If anything drops mid-transfer, the transfer stops and the partial file is deleted.</li>
+        <li><strong>Local UI.</strong> The web page is served on <code>127.0.0.1</code> only, behind a session key printed in your terminal.</li>
+      </ul>
+    </section>
+
+    <footer>
+      <a href="https://github.com/irshadnazree/just-a-portal">Source on GitHub</a>
+      <span class="muted">· This site only hosts the download. Transfers never touch it.</span>
+    </footer>
+  </main>
+</body>
+</html>
